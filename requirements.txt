@@ -1,5 +1,8 @@
 # Core runtime dependencies
 playwright>=1.61
+fastapi>=0.115
+uvicorn[standard]>=0.30
+httpx2>=2.0  # required by fastapi.testclient (starlette TestClient)
 
 # Optional: load .env when running locally (not needed in CI)
 python-dotenv==1.0.1

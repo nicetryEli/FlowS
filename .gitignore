@@ -59,3 +59,9 @@ GEMINI.md
 AGENTS.md
 .mcp.json
 verify_e2e_*.py
+
+# Local dataset samples (personal data)
+data/
+
+# Plan workspaces
+.superpowers/

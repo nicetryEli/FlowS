@@ -126,13 +126,23 @@ def run_hourly_sync() -> None:
 
     step_started = time.perf_counter()
     logger.info("Step 2: Ingesting crawl results into SQLite")
-    logger.warning(
-        "SQLite ingest is not implemented yet (Steps 3–4). "
-        "Crawl results collected but not stored: schedule=%s, exams=%s, deadlines=%s.",
-        "FAILED" if data["schedule"] is None else len(data["schedule"]),
-        "FAILED" if data["exams"] is None else len(data["exams"]),
-        "FAILED" if data["deadlines"] is None else len(data["deadlines"]),
-    )
+    try:
+        from ingest import ingest
+
+        report = ingest(data)
+        logger.info(
+            "Ingested: %d inserted, %d updated, %d deleted (status=%s, skipped=%d).",
+            report["inserted"], report["updated"], report["deleted"], report["status"], report["skipped"],
+        )
+        if report["status"] == "failed" or (
+            data["schedule"] is None and data["exams"] is None and data["deadlines"] is None
+        ):
+            _handle_error("Ingest failed (all sources unavailable)", RuntimeError(report.get("status", "failed")))
+            return
+    except Exception as exc:
+        logger.exception("Step 2 failed after %.2fs", time.perf_counter() - step_started)
+        _handle_error("SQLite ingest failed", exc)
+        return
     _log_step_elapsed("Step 2", step_started)
 
     logger.info("=== Hourly data collection complete. ===")

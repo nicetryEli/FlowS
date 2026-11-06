@@ -19,9 +19,13 @@ MIGRATIONS_DIR = Path(__file__).resolve().parent / "db" / "migrations"
 logger = logging.getLogger(__name__)
 
 
+def _default_path() -> str:
+    return os.environ.get("LOCAL_DB_PATH", DEFAULT_DB_PATH)
+
+
 def get_db(db_path: str | Path | None = None) -> sqlite3.Connection:
     """Open a connection with WAL, row_factory and foreign_keys=ON."""
-    path = Path(db_path or DEFAULT_DB_PATH)
+    path = Path(db_path or _default_path())
     path.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(path, timeout=30)
     conn.row_factory = sqlite3.Row
@@ -32,7 +36,7 @@ def get_db(db_path: str | Path | None = None) -> sqlite3.Connection:
 
 def migrate(db_path: str | Path | None = None) -> int:
     """Apply pending migrations in filename order. Returns count applied."""
-    path = Path(db_path or DEFAULT_DB_PATH)
+    path = Path(db_path or _default_path())
     applied = 0
     files = sorted(MIGRATIONS_DIR.glob("*.sql"))
     if not files:

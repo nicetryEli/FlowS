@@ -65,3 +65,7 @@ data/
 
 # Plan workspaces
 .superpowers/
+
+# Local SQLite database
+data/app.db*
+data/backups/

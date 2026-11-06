@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../data/mock_events.dart';
+import '../data/events_repository.dart';
 import '../models/calendar_event.dart';
 import '../theme.dart';
 import 'event_detail_dialog.dart';
@@ -11,7 +11,7 @@ import 'event_style.dart';
 class NextUpPanel extends StatelessWidget {
   const NextUpPanel({super.key, required this.repository, required this.onAddPersonal});
 
-  final MockEventsRepository repository;
+  final CalendarEventsRepository repository;
   final VoidCallback onAddPersonal;
 
   @override

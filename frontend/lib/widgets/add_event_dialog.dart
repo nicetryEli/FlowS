@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../data/mock_events.dart';
+import '../data/events_repository.dart';
 import '../models/calendar_event.dart';
 import '../theme.dart';
 
@@ -16,7 +16,7 @@ const _colorOptions = <String, Color>{
 
 Future<void> showAddEventDialog(
   BuildContext context,
-  MockEventsRepository repository, {
+  CalendarEventsRepository repository, {
   DateTime? initialDate,
 }) {
   return showGeneralDialog<void>(
@@ -42,7 +42,7 @@ Future<void> showAddEventDialog(
 class _AddEventDialog extends StatefulWidget {
   const _AddEventDialog({required this.repository, this.initialDate});
 
-  final MockEventsRepository repository;
+  final CalendarEventsRepository repository;
   final DateTime? initialDate;
 
   @override
@@ -109,7 +109,7 @@ class _AddEventDialogState extends State<_AddEventDialog> {
     }
   }
 
-  void _save() {
+  Future<void> _save() async {
     final title = _titleController.text.trim();
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Give the event a title first')));
@@ -121,16 +121,23 @@ class _AddEventDialogState extends State<_AddEventDialog> {
     final end = _allDay
         ? DateTime(_date.year, _date.month, _date.day, 23, 59)
         : DateTime(_date.year, _date.month, _date.day, _endTime.hour, _endTime.minute);
-    widget.repository.add(CalendarEvent(
-          id: 'personal-${DateTime.now().microsecondsSinceEpoch}',
-          kind: CalendarEventKind.personal,
-          title: title,
-          start: start,
-          end: end.isBefore(start) ? start.add(const Duration(hours: 1)) : end,
-          allDay: _allDay,
-          color: _color,
-        ));
-    Navigator.of(context).pop();
+    final event = CalendarEvent(
+      id: 'personal-${DateTime.now().microsecondsSinceEpoch}',
+      kind: CalendarEventKind.personal,
+      title: title,
+      start: start,
+      end: end.isBefore(start) ? start.add(const Duration(hours: 1)) : end,
+      allDay: _allDay,
+      color: _color,
+    );
+    try {
+      await widget.repository.add(event);
+      if (mounted) Navigator.of(context).pop();
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not save the event: $error')));
+      }
+    }
   }
 
   @override

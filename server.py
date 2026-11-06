@@ -78,7 +78,8 @@ def create_app() -> FastAPI:
         conn = get_db()
         try:
             rows = conn.execute(
-                """SELECT kind, ref_id, title, location, start_dt, end_dt, all_day, tag
+                """SELECT kind, ref_id, title, location, start_dt, end_dt, all_day, tag,
+                          notes, activity_url, course_name, exam_type, color
                    FROM calendar_events
                    WHERE start_dt <= ? AND end_dt >= ?
                    ORDER BY start_dt""",
@@ -96,6 +97,11 @@ def create_app() -> FastAPI:
                 "end": row["end_dt"],
                 "all_day": row["all_day"],
                 "tag": row["tag"],
+                "notes": row["notes"],
+                "activity_url": row["activity_url"],
+                "course_name": row["course_name"],
+                "exam_type": row["exam_type"],
+                "color": row["color"],
             }
             for row in rows
         ]

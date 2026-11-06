@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../data/mock_events.dart';
+import '../data/events_repository.dart';
 import '../models/calendar_event.dart';
 import '../theme.dart';
 import '../widgets/event_detail_dialog.dart';
@@ -16,7 +16,7 @@ class MonthView extends StatelessWidget {
     required this.onQuickAdd,
   });
 
-  final MockEventsRepository repository;
+  final CalendarEventsRepository repository;
   final DateTime visibleMonth;
   final void Function(DateTime date) onQuickAdd;
 
@@ -110,7 +110,7 @@ class _WeekRow extends StatelessWidget {
   final int daysInMonth;
   final int prevDays;
   final DateTime visibleMonth;
-  final MockEventsRepository repository;
+  final CalendarEventsRepository repository;
   final List<CalendarEvent> events;
   final DateTime today;
   final void Function(DateTime date) onQuickAdd;
@@ -215,7 +215,7 @@ class _DayCell extends StatelessWidget {
   });
 
   final _CellInfo info;
-  final MockEventsRepository repository;
+  final CalendarEventsRepository repository;
   final List<CalendarEvent> events;
   final DateTime today;
   final void Function(DateTime date) onQuickAdd;
@@ -303,7 +303,7 @@ class _EventChip extends StatelessWidget {
   const _EventChip({required this.event, required this.repository});
 
   final CalendarEvent event;
-  final MockEventsRepository repository;
+  final CalendarEventsRepository repository;
 
   @override
   Widget build(BuildContext context) {
@@ -354,7 +354,7 @@ class _MoreLink extends StatelessWidget {
   const _MoreLink({required this.events, required this.repository});
 
   final List<CalendarEvent> events;
-  final MockEventsRepository repository;
+  final CalendarEventsRepository repository;
 
   @override
   Widget build(BuildContext context) {

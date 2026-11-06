@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:tdtu_calendar/data/mock_events.dart';
 import 'package:tdtu_calendar/main.dart';
 
 void main() {
@@ -10,7 +11,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(const TdtuCalendarApp());
+    await tester.pumpWidget(TdtuCalendarApp(repository: MockEventsRepository()));
     await tester.pumpAndSettle();
 
     expect(find.text('Scheduled'), findsOneWidget);

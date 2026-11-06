@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../data/mock_events.dart';
+import '../data/events_repository.dart';
 import '../models/calendar_event.dart';
 import '../theme.dart';
 import 'event_style.dart';
@@ -17,7 +17,7 @@ const _statusVi = {
 Future<void> showEventDetailDialog(
   BuildContext context,
   CalendarEvent event,
-  MockEventsRepository repository,
+  CalendarEventsRepository repository,
 ) {
   return showGeneralDialog<void>(
     context: context,
@@ -43,7 +43,7 @@ class _EventDetailDialog extends StatelessWidget {
   const _EventDetailDialog({required this.event, required this.repository});
 
   final CalendarEvent event;
-  final MockEventsRepository repository;
+  final CalendarEventsRepository repository;
 
   @override
   Widget build(BuildContext context) {
@@ -228,9 +228,15 @@ class _EventDetailDialog extends StatelessWidget {
         ],
       ),
     );
-    if (ok == true) {
-      repository.remove(event.id);
-      if (context.mounted) Navigator.of(context).pop();
+    if (ok == true && context.mounted) {
+      try {
+        await repository.remove(event.id);
+        if (context.mounted) Navigator.of(context).pop();
+      } catch (error) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not delete: $error')));
+        }
+      }
     }
   }
 

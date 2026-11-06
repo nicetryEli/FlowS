@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../data/mock_events.dart';
+import '../data/events_repository.dart';
 import '../models/calendar_event.dart';
 import '../theme.dart';
 import '../widgets/event_detail_dialog.dart';
@@ -12,7 +12,7 @@ import '../widgets/event_style.dart';
 class WeekView extends StatefulWidget {
   const WeekView({super.key, required this.repository, required this.weekAnchor});
 
-  final MockEventsRepository repository;
+  final CalendarEventsRepository repository;
   final DateTime weekAnchor;
 
   @override
@@ -190,7 +190,7 @@ class _DayColumn extends StatelessWidget {
 
   final DateTime date;
   final List<CalendarEvent> events;
-  final MockEventsRepository repository;
+  final CalendarEventsRepository repository;
   final int startHour;
   final double hourHeight;
   final bool isToday;
@@ -298,7 +298,7 @@ class _PositionedEvent extends StatelessWidget {
   final double columnWidth;
   final int startHour;
   final double hourHeight;
-  final MockEventsRepository repository;
+  final CalendarEventsRepository repository;
 
   @override
   Widget build(BuildContext context) {

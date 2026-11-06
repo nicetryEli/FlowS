@@ -3,7 +3,7 @@ from db import migrate, get_db
 
 def test_fresh_db_migrates_and_is_idempotent(tmp_path):
     db = tmp_path / "app.db"
-    assert migrate(db) == 1
+    assert migrate(db) == 2  # 001 initial + 002 view details
     assert migrate(db) == 0  # re-run applies nothing
 
 def test_calendar_events_view_derives_session_times(tmp_path):

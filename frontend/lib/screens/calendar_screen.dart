@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../data/mock_events.dart';
+import '../data/events_repository.dart';
 import '../theme.dart';
 import '../views/month_view.dart';
 import '../views/week_view.dart';
@@ -14,14 +14,16 @@ import '../views/year_view.dart';
 /// Root calendar screen: icon rail · (top bar + active view) · next-up panel,
 /// with the footer strip below. Mirrors the approved prototype.
 class CalendarScreen extends StatefulWidget {
-  const CalendarScreen({super.key});
+  const CalendarScreen({super.key, required this.repository});
+
+  final CalendarEventsRepository repository;
 
   @override
   State<CalendarScreen> createState() => _CalendarScreenState();
 }
 
 class _CalendarScreenState extends State<CalendarScreen> {
-  final MockEventsRepository _repository = MockEventsRepository();
+  late final CalendarEventsRepository _repository = widget.repository;
 
   // Anchor defaults to the real "now" (Nov 2026 matches the mock dataset).
   CalendarViewMode _mode = CalendarViewMode.month;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../data/mock_events.dart';
+import '../data/events_repository.dart';
 import '../models/calendar_event.dart';
 import '../theme.dart';
 
@@ -14,7 +14,7 @@ class YearView extends StatelessWidget {
     required this.onSelectMonth,
   });
 
-  final MockEventsRepository repository;
+  final CalendarEventsRepository repository;
   final int year;
   final ValueChanged<DateTime> onSelectMonth;
 

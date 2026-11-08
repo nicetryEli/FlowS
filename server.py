@@ -15,7 +15,7 @@ docs/superpowers/plans/2026-11-06-sqlite-fastapi-backend.md Task 4):
 
 SQLite (docs/erd.md v1.0) is the ONLY source of truth.
 """
-
+from fastapi.middleware.cors import CORSMiddleware
 import datetime as dt
 import json
 import logging
@@ -44,6 +44,13 @@ def _iso_local(raw: str | None) -> str | None:
 def create_app() -> FastAPI:
     migrate()  # resolves LOCAL_DB_PATH dynamically (or data/app.db)
     app = FastAPI(title="TDTU Calendar API", version="1.0.0")
+    app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1):\d+",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
     # ------------------------------------------------------------------
     # Health / meta

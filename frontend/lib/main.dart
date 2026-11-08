@@ -6,6 +6,8 @@ import 'data/api_events_repository.dart';
 import 'screens/calendar_screen.dart';
 import 'theme.dart';
 
+
+
 const _useMock = bool.fromEnvironment('USE_MOCK', defaultValue: false);
 const _apiBase = String.fromEnvironment('API_BASE', defaultValue: '');
 
@@ -25,8 +27,11 @@ class TdtuCalendarApp extends StatelessWidget {
     return MaterialApp(
       title: 'TDTU · Scheduled',
       debugShowCheckedModeBanner: false,
-      theme: buildAppTheme(),
       home: CalendarScreen(repository: repository),
+      theme: ThemeData(
+        fontFamily: 'JetBrainsMono',
+        useMaterial3: true,
+      ),
     );
   }
 }

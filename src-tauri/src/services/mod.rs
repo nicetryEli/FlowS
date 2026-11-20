@@ -5,3 +5,4 @@ pub mod calendar_service;
 pub mod tdtu_sync_adapter;
 pub mod sync_service;
 pub mod scheduler;
+pub mod credentials_service;

@@ -9,15 +9,22 @@ struct Migration {
 }
 
 fn migrations() -> &'static [Migration] {
-    &[Migration {
-        version: 1,
-        name: "0001_initial_schema",
-        sql: include_str!("../../migrations/0001_initial_schema.sql"),
-    }]
+    &[
+        Migration {
+            version: 1,
+            name: "0001_initial_schema",
+            sql: include_str!("../../migrations/0001_initial_schema.sql"),
+        },
+        Migration {
+            version: 2,
+            name: "0002_app_settings",
+            sql: include_str!("../../migrations/0002_app_settings.sql"),
+        },
+    ]
 }
 
 pub fn apply_pending_migrations(conn: &mut Connection) -> DbResult<()> {
-    let current_version: i32 = conn.pragma_query_value(None, "user_version", |row| row.get(0))?;
+    let mut current_version: i32 = conn.pragma_query_value(None, "user_version", |row| row.get(0))?;
 
     for migration in migrations() {
         if migration.version <= current_version {
@@ -41,6 +48,7 @@ pub fn apply_pending_migrations(conn: &mut Connection) -> DbResult<()> {
         })?;
         tx.pragma_update(None, "user_version", migration.version)?;
         tx.commit()?;
+        current_version = migration.version;
     }
 
     Ok(())
@@ -53,14 +61,14 @@ mod tests {
     use super::apply_pending_migrations;
 
     #[test]
-    fn applies_initial_schema_migration() {
+    fn applies_migrations_and_creates_tables() {
         let mut conn = Connection::open_in_memory().expect("in-memory db should open");
         apply_pending_migrations(&mut conn).expect("migrations should apply");
 
         let user_version: i32 = conn
             .pragma_query_value(None, "user_version", |row| row.get(0))
             .expect("user_version should be readable");
-        assert_eq!(user_version, 1);
+        assert_eq!(user_version, 2);
 
         for table in [
             "tasks",
@@ -71,6 +79,7 @@ mod tests {
             "calendar_events",
             "sync_state",
             "sync_runs",
+            "app_settings",
         ] {
             let exists: i32 = conn
                 .query_row(

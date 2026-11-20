@@ -77,6 +77,10 @@ pub fn run() {
             commands::calendar::delete_calendar_event,
             commands::sync::get_sync_state,
             commands::sync::run_tdtu_sync_with_dataset,
+            commands::settings::get_tdtu_sync_config,
+            commands::settings::set_tdtu_student_id,
+            commands::settings::set_tdtu_sync_enabled,
+            commands::settings::set_tdtu_password,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

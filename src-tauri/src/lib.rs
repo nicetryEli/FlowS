@@ -24,6 +24,7 @@ pub fn run() {
             let db_path = app_data_dir.join("flows.sqlite");
             database::init_db(&db_path)
                 .map_err(|e| std::io::Error::other(e.to_string()))?;
+            app.manage(database::DbPath(db_path));
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![greet])

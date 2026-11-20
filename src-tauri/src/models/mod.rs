@@ -1,1 +1,4 @@
-// Shared domain structs/enums/DTOs will be added in later tasks.
+pub mod task;
+
+pub use task::{NewTask, Task, TaskImportance, TaskSource, TaskUpdate};
+

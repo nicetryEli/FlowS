@@ -27,7 +27,25 @@ pub fn run() {
             app.manage(database::DbPath(db_path));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![
+            greet,
+            commands::tasks::create_task,
+            commands::tasks::get_task,
+            commands::tasks::list_tasks,
+            commands::tasks::update_task,
+            commands::tasks::delete_task,
+            commands::tasks::complete_task,
+            commands::tasks::set_task_focus,
+            commands::tasks::list_focused_tasks,
+            commands::tags::create_tag,
+            commands::tags::get_tag,
+            commands::tags::list_tags,
+            commands::tags::update_tag,
+            commands::tags::delete_tag,
+            commands::tags::attach_tag_to_task,
+            commands::tags::detach_tag_from_task,
+            commands::tags::list_tags_for_task,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -45,6 +45,10 @@ pub fn run() {
             commands::tags::attach_tag_to_task,
             commands::tags::detach_tag_from_task,
             commands::tags::list_tags_for_task,
+            commands::stats::get_daily_task_summary,
+            commands::stats::list_completion_counts_by_date,
+            commands::stats::calculate_streak,
+            commands::stats::list_monthly_completion_counts,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

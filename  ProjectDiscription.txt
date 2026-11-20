@@ -1,0 +1,71 @@
+Bản SRS của **FlowS** có ý tưởng sản phẩm rất rõ ràng, đánh trúng tâm lý người dùng cần sự kết hợp giữa quản lý công việc thực dụng và yếu tố giải trí nhẹ nhàng (gamification). Tuy nhiên, tài liệu vẫn còn một vài điểm mâu thuẫn nội tại và vướng mắc về kiến trúc kỹ thuật cần chỉnh sửa trước khi bắt tay vào code.
+
+### 1. Điểm sáng của bản thiết kế
+
+* **Lựa chọn Tech Stack tối ưu cho Desktop:** Kết hợp **Tauri 2 + Rust + SQLite + Vue 3** cho mô hình *local-first* là lựa chọn rất hợp lý. App sẽ cực kỳ nhẹ RAM, khởi động nhanh hơn hẳn Electron và hỗ trợ tốt môi trường Linux (cả Wayland lẫn X11) như mục tiêu bạn đặt ra.
+
+
+* **Cơ chế Gamification gắn liền với tâm lý học hành vi:** Việc giới hạn chỉ được kéo tối đa **3 con cá** xuống vùng tập trung ở *Lake of Task* tương tự quy tắc giới hạn WIP (Work-In-Progress) trong Kanban, giúp tránh tình trạng ôm đồm. Hiệu ứng cá chuyển sang màu đen khi sát deadline cũng tạo tín hiệu cảnh báo thị giác tốt hơn nhiều so với con số ngày tháng khô khan.
+
+
+* **Kiến trúc thư mục phân lớp chuẩn:** Việc tách sẵn thư mục `commands/`, `services/`, `database/` và đặc biệt là `platform/ (linux.rs, windows.rs, macos.rs)` giúp cô lập phần code giao tiếp hệ điều hành, rất thuận lợi khi mở rộng đa nền tảng về sau.
+
+
+
+---
+
+### 2. Các điểm mâu thuẫn & lỗ hổng cần sửa ngay trong SRS
+
+* **Mâu thuẫn chủ đề giữa "Vườn hoa" và "Bể cá":** Mục 1, Mục 2 và phần *Các lưu ý về thiết kế* vẫn đang mô tả gamification là *"vườn hoa task"*, *"hoa, bó hoa"* và *"other colors is for flowers"*. Trong khi đó, Mục 5.3 và 5.4 đã chuyển hoàn toàn sang cơ chế **Lake of Task** (bể cá và lịch sử 12 bể cá theo tháng). Bạn cần cập nhật đồng bộ toàn bộ tài liệu về concept bể cá để tránh nhầm lẫn khi thiết kế UI/database.
+
+
+* **Lỗi kiến trúc ở tính năng Crawler (Mục 5.5):** Tài liệu ghi *"Lên lịch đồng bộ định kỳ (background job) trong github"*, nhưng ở Mục 2 và Mục 7 lại khẳng định app chạy **local-first, không có backend server, dùng SQLite cục bộ duy nhất**. GitHub Actions không thể ghi dữ liệu trực tiếp vào file SQLite nằm trên máy cá nhân người dùng, và việc đẩy thông tin đăng nhập trường học lên GitHub cũng tiềm ẩn rủi ro bảo mật.
+
+
+* *Hướng sửa:* Đưa background job vào chính tiến trình Rust của app (dùng `tokio` scheduler) để tự động chạy ngầm định kỳ khi app đang mở hoặc thu gọn dưới System Tray.
+
+
+* **Xung đột phong cách giữa `NES.css` và font `Geist`:** `NES.css` mang giao diện game 8-bit cổ điển với viền pixel dày, trong khi bộ font `Geist / Geist Mono` mang hơi hướng tối giản hiện đại (kiểu Vercel/Linear). Nếu kết hợp trực tiếp dễ gây lệch pha thẩm mỹ. Bạn nên chọn dứt khoát một hướng: hoặc dùng **Pixel Art 2D** toàn diện (cá pixel, khung viền pixel), hoặc bỏ `NES.css` để đi theo hướng **Monochrome Minimalist** sắc nét với font `Geist`.
+
+
+* **Chưa rõ quy tắc vòng đời cá qua ngày mới (Mục 5.3):** Phần *Reset hàng ngày* nêu rằng các con cá đã tô màu sẽ ẩn đi, bể cá quay lại là những chú cá từ xám đến đen. Cần bổ sung logic rõ ràng: những con cá xám/đen này là các task chưa hoàn thành từ hôm trước chuyển sang, và với các task không đặt deadline thì cá sẽ giữ màu xám mặc định hay đổi màu theo số ngày tồn đọng.
+
+
+
+---
+
+### 3. Gợi ý kỹ thuật để triển khai hiệu quả
+
+* **Xây dựng "Lake of Task" bằng HTML5 Canvas 2D hoặc PixiJS:**
+Thay vì dựng engine 3D phức tạp, một lớp **Canvas 2D** (hoặc **PixiJS**) nhúng trong Vue 3 là đủ mượt để render hàng chục con cá bơi theo thuật toán **Boids** (tự động né nhau và quay đầu khi chạm thành bể). Cách này cũng giúp việc xử lý sự kiện chuột để "bắt" cá kéo từ vùng trên (3/4 màn hình) xuống vùng tập trung bên dưới (1/4 màn hình) đơn giản hơn nhiều. Bạn có thể gắn thêm một bộ đếm giờ Pomodoro ngay tại vùng 1/4 bên dưới này để tăng tính thực dụng khi xử lý tối đa 3 task đang chọn.
+
+
+* **Xử lý tích hợp hệ điều hành (OS Integration) trong Rust:**
+* Widget Media Player (Mục 5.1): Trên Linux (`linux.rs`), hãy dùng crate `mpris` để giao tiếp qua D-Bus, lấy trực tiếp tên bài hát và trạng thái phát từ Spotify/trình duyệt. Trên Windows dùng `windows::Media::Control`.
+
+
+* Lưu trữ mật khẩu trường an toàn (Mục 5.5 & 6): Không nên tự viết hàm mã hóa mật khẩu rồi lưu vào file config hay SQLite. Hãy dùng crate `keyring` trong Rust để đẩy thông tin đăng nhập vào trình quản lý mật khẩu gốc của hệ điều hành (GNOME Keyring / KWallet trên Linux, Credential Manager trên Windows, Keychain trên macOS).
+
+
+
+
+* **Giải pháp Crawler dữ liệu trường học thực tế hơn:**
+Cổng thông tin các trường đại học thường có SSO, đổi cấu trúc HTML đột ngột hoặc dính CAPTCHA, khiến việc crawl ngầm hoàn toàn bằng Rust HTTP client rất dễ lỗi. Giải pháp bền vững hơn là dùng chính một cửa sổ **WebView phụ của Tauri** để người dùng đăng nhập trực tiếp như trình duyệt bình thường, sau đó inject đoạn script nhỏ để bóc tách lịch học/deadline và đẩy dữ liệu về Rust lưu vào SQLite.
+* Cơ chế Theme / Modding UI (Mục 6):
+Để người dùng có thể tự mod toàn bộ giao diện theo rule của app, hãy định nghĩa toàn bộ màu sắc, bo góc, font chữ bằng **CSS Variables** và đọc cấu hình từ file `theme.json` nằm trong thư mục cấu hình của hệ thống (ví dụ `~/.config/flows/themes/`). Khi muốn tạo theme mới, người dùng chỉ cần tạo một thư mục chứa file `theme.json` và bộ ảnh sprite cá tương ứng mà không cần chạm vào mã nguồn.
+
+
+
+### Lộ trình chia giai đoạn (MVP) gợi ý
+
+1. **Giai đoạn 1 (Core & Data):** Dựng khung Tauri 2 + Vue 3 + SQLite, hoàn thiện CRUD Task, hệ thống Tag nhiều-nhiều, Dashboard đếm streak/heatmap và Calendar cơ bản (nhập thủ công).
+
+
+2. **Giai đoạn 2 (Gamification & Theme):** Code canvas bể cá *Lake of Task*, hiệu ứng chuyển màu theo deadline, trang lịch sử 12 bể cá theo tháng và hệ thống load `theme.json`.
+
+
+3. **Giai đoạn 3 (OS & Automation):** Tích hợp Native Notification, Media Player widget theo từng OS, đóng gói các định dạng Linux (`PKGBUILD` cho Arch, `.deb`, `AppImage`) và viết module crawler đồng bộ lịch trường.
+
+
+
+Bạn muốn bắt đầu thiết kế chi tiết phần nào trước—**lược đồ cơ sở dữ liệu SQLite**, **thuật toán bơi & tương tác kéo thả cho Lake of Task**, hay **cấu trúc project Tauri 2 + Rust**?

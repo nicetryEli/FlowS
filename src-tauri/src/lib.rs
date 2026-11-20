@@ -24,7 +24,27 @@ pub fn run() {
             let db_path = app_data_dir.join("flows.sqlite");
             database::init_db(&db_path)
                 .map_err(|e| std::io::Error::other(e.to_string()))?;
-            app.manage(database::DbPath(db_path));
+            app.manage(database::DbPath(db_path.clone()));
+
+            // Local in-app scheduler foundation: every 5 hours while app runtime is active.
+            // Concrete TDTU fetch/credentials are configured in later tasks; this loop maintains
+            // sync scheduling state without performing network crawling when not configured.
+            let scheduler_db_path = db_path.clone();
+            tauri::async_runtime::spawn(async move {
+                let mut interval = tokio::time::interval(std::time::Duration::from_secs(5 * 60 * 60));
+                interval.tick().await; // initial immediate tick
+                loop {
+                    interval.tick().await;
+                    if let Ok(conn) = database::open_connection(&scheduler_db_path) {
+                        let _ = services::sync_service::ensure_sync_state_row(&conn, "tdtu");
+                        let next_run = (chrono::Utc::now() + chrono::Duration::hours(5)).to_rfc3339();
+                        let _ = conn.execute(
+                            "UPDATE sync_state SET next_run_at = COALESCE(next_run_at, ?1), updated_at = ?2 WHERE source = 'tdtu'",
+                            rusqlite::params![next_run, chrono::Utc::now().to_rfc3339()],
+                        );
+                    }
+                }
+            });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -55,6 +75,8 @@ pub fn run() {
             commands::calendar::list_calendar_events_in_range,
             commands::calendar::update_calendar_event,
             commands::calendar::delete_calendar_event,
+            commands::sync::get_sync_state,
+            commands::sync::run_tdtu_sync_with_dataset,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

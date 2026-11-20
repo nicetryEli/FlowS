@@ -49,6 +49,12 @@ pub fn run() {
             commands::stats::list_completion_counts_by_date,
             commands::stats::calculate_streak,
             commands::stats::list_monthly_completion_counts,
+            commands::calendar::create_calendar_event,
+            commands::calendar::get_calendar_event,
+            commands::calendar::list_calendar_events,
+            commands::calendar::list_calendar_events_in_range,
+            commands::calendar::update_calendar_event,
+            commands::calendar::delete_calendar_event,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
